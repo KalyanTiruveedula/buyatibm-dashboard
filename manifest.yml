@@ -1,0 +1,9 @@
+applications:
+  - path: .
+    name: feedback-dashboard-dev
+    memory: 256M
+    instances: 1
+    host: feedback-dashboard-dev
+    domain: mybluemix.net
+    disk_quota: 1024M
+    buildpack: sdk-for-nodejs

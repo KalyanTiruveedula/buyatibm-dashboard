@@ -1,0 +1,379 @@
+<!DOCTYPE html>
+
+<html lang="en">
+
+<head>
+
+    <title>Feedback Dashboard</title>
+
+    <meta charset="utf-8">
+
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <link href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.0/css/bootstrap.min.css" rel="stylesheet" id="bootstrap-css">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.7.1/css/bootstrap-datepicker3.css" rel="stylesheet" id="bootstrap-css">
+
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.0/js/bootstrap.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.7.1/js/bootstrap-datepicker.min.js"></script>
+    <script src="//dobtco.github.io/jquery-resizable-columns/dist/jquery.resizableColumns.js"></script>
+    <link rel="stylesheet" type="text/css" href= "css/style.css" >
+    <link href="https://fonts.googleapis.com/css?family=IBM+Plex+Sans" rel="stylesheet" id="bootstrap-css">
+    </head>
+
+<script type="text/javascript">
+    $(function () {
+        $('.datepicker').datepicker({
+            format: "yyyy-mm-dd",
+            autoclose: true,
+            todayHighlight: true,
+            showOtherMonths: true,
+            selectOtherMonths: true,
+            autoclose: true,
+            changeMonth: true,
+            changeYear: true,
+            endDate: "today",
+            orientation: "button"
+           
+        });
+        $(function() {
+        $("divResponse").resizableColumns({
+        store: window.store
+        });
+        });
+        $('#search').keyup(function(){
+            search_table($(this).val());
+        })
+        function search_table(value){
+            $('#tblBodyResponse tr').each(function(){
+                var found = 'false';
+                $(this).each(function(){
+                    if($(this).text().toLowerCase().indexOf(value.toLowerCase())>=0)
+                    {
+                        found ='true';
+                    }
+                });
+                if(found=='true')
+                {
+                    $(this).show();
+                }
+                else
+                {
+                    $(this).hide();
+                }
+            });
+        }
+
+        $("#ddlSchema").change(function() {
+            var selected = $(this).text(); // get selected options value.
+
+            var feedbackurl = "/Feedbackvalue?SchemaName="+$("#ddlSchema").val()+"";
+            var tableresponseurl = "/tblBodyResponse?SchemaName="+$("#ddlSchema").val()+"";
+
+
+            $.ajax({
+                                 method: 'get',
+                                 url: feedbackurl,
+                                 contentType: 'application/json',
+                                 success: function(data) {
+                                    $('#ddlRefineBy').show();
+                                    $('#divFeedback').show();
+                                    $.each(data, function(i, item) {
+                                        $(".PositiveFeedBackValue").text(item.POSITIVE +'%'+" "+","+" "+item.TOTAL);
+                                        // $(".PositiveAmountValue").text(item.TOTAL);
+                                        $(".NegativeFeedBackValue").text(item.NEGATIVE +'%'+" "+","+" "+item.TOTAL);
+                                        // $(".NegativeAmountValue").text(item.TOTALN);
+                                    });
+
+                                 },
+                                error: function (xhr, status, error) {
+                                    alert(error);
+                                }
+                                });
+                                $.ajax({
+                                 method: 'get',
+                                 url: tableresponseurl,
+                                 contentType: 'application/json',
+                                 success: function(data) {
+                                    $('#tblBodyResponse').empty();
+
+                                    $.each(data, function(i, item) {
+                                    var $tr = $('<tr>').append(
+                                        $('<td>').text(item.INTENT_NAME),
+                                        $('<td>').text(item.QUESTION),
+                                        $('<td>').text(item.RESPONSE).css('width','10px'),
+                                        $('<td>').text(item.USERFUL),
+                                        $('<td>').text(item.CONFIDENCE),
+                                        $('<td>').text(item.ASK_DATE)
+                                    ).appendTo('#tblBodyResponse');
+                                        });
+
+
+                                        $('#divSearch').show();
+                                        $('#divResponse').show();
+                                 },
+                                error: function (xhr, status, error) {
+                                    alert(error);
+                                }
+                                });
+
+
+    });
+
+            $( "#btnRefresh" ).click(function() {
+
+                if($("#ddlSchema").val() != "0")
+                    {
+                if($("#Begindate").val() != "" && $("#enddate").val() != "")
+                            {
+                                var begindate =$("#Begindate").val();
+                                var enddate =$("#enddate").val();
+                                // if($("#ddlSchema").val() == "1") // Get Internal Data
+                                // {
+                                //     var feedbackurl = "/getFeedBack?begindate="+begindate+"&enddate="+enddate+"";
+                                //     var tableresponseurl = "/getTableResponse?begindate="+begindate+"&enddate="+enddate+"";
+
+                                // }
+                                // else if($("#ddlSchema").val() == "2") //Get External Data
+                                // {
+                                //     var feedbackurl = "/getExternalFeedBack?begindate="+begindate+"&enddate="+enddate+"";
+                                //     var tableresponseurl = "/getTableResponse?begindate="+begindate+"&enddate="+enddate+"";
+
+                                // }
+
+                                var feedbackurl = "/getFeedBack?begindate="+begindate+"&enddate="+enddate+"&SchemaName="+$("#ddlSchema").val()+"";
+                                var tableresponseurl = "/getTableResponse?begindate="+begindate+"&enddate="+enddate+"&SchemaName="+$("#ddlSchema").val()+"";
+                                $.ajax({
+                                 method: 'get',
+                                 url: feedbackurl,
+                                 contentType: 'application/json',
+                                 success: function(data) {
+                                    $.each(data, function(i, item) {
+                                        $(".PositiveFeedBackValue").text(item.POSITIVE +'%'+" "+","+" "+item.TOTAL);
+                                        // $(".PositiveAmountValue").text(item.TOTAL);
+                                        $(".NegativeFeedBackValue").text(item.NEGATIVE +'%'+" "+","+" "+item.TOTAL);
+                                        // $(".NegativeAmountValue").text(item.TOTALN);
+                                    });
+                                 },
+                                error: function (xhr, status, error) {
+                                    alert(error);
+                                }
+                                });
+                                $.ajax({
+                                 method: 'get',
+                                 url: tableresponseurl,
+                                 contentType: 'application/json',
+                                 success: function(data) {
+                                    $('#tblBodyResponse').empty();
+
+                                    $.each(data, function(i, item) {
+                                    var $tr = $('<tr>').append(
+                                        $('<td>').text(item.INTENT_NAME),
+                                        $('<td>').text(item.QUESTION),
+                                        $('<td>').text(item.RESPONSE).css('width','10px'),
+                                        $('<td>').text(item.USERFUL),
+                                        $('<td>').text(item.CONFIDENCE),
+                                        $('<td>').text(item.ASK_DATE)
+                                    ).appendTo('#tblBodyResponse');
+                                        });
+
+
+                                        $('#divFeedback').show();
+                                        $('#divSearch').show();
+                                        $('#divResponse').show();
+                                 },
+                                error: function (xhr, status, error) {
+                                    alert(error);
+                                }
+                                });
+                            }
+                            else {
+                        alert( "Please select begin date and end date" );
+                            }
+                        }
+                        else{
+                            alert( "Please select Schema" );
+                        }
+
+            });
+    });
+
+</script>
+<style type="text/css">
+    .box {
+        border: groove;
+        width: 150px;
+        height: 150px;
+    }
+    .datepicker > span:hover {
+        cursor: pointer;
+    }
+    /* #pageTitle{
+        font-family: IBM Plex Sans;
+    } */
+    body {
+        overflow:hidden;
+        font-family: IBM Plex Sans;
+    }
+    .table{
+        border-collapse:collapse;
+        table-layout:fixed;
+    }
+    .th,td{
+        white-space: -o-pre-wrap;
+        word-wrap: break-word;
+        white-space: pre-wrap;
+        white-space: -moz-pre-wrap;
+        white-space: -pre-wrap;
+        -moz-text-overflow:ellipsis;
+            -ms-text-overflow: ellipsis;
+            -o-text-overflow: ellipsis;
+                text-overflow: ellipsis;
+        }
+    .scrollit {
+        overflow:scroll;
+        height: 150px;
+    }
+    .rc-handle-container {
+        position: relative;
+    }
+    .rc-handle {
+        position: absolute;
+        width: 7px;
+        cursor: ew-resize;
+        margin-left: -3px;
+        z-index: 2;
+    }
+    table.rc-table-resizing {
+        cursor: ew-resize;
+    }
+    table.rc-table-resizing thead,
+    table.rc-table-resizing thead > th,
+    table.rc-table-resizing thead > th > a {
+    cursor: ew-resize;
+    }
+    .colResizer{
+        background-color:Red;
+        position: relative;
+    }
+    .colHandle{
+        height:20px;
+        width:10px;
+        background-color: blue;
+        position:absolute;
+        right:-10px;
+        top:0px;
+    }
+
+    .form-control{
+        padding: 20px;
+        font-size: 15px;
+    }
+
+    .table-striped table{
+        table-layout: auto !important;
+    }
+
+    .table-striped th, .table-striped td, .table-striped tbody td {
+        width: auto !important;
+    }
+    *{box-sizing: border-box;}
+    table{border-collapse:collapse;}
+    td,th{padding:5px 15px;text-align:left;}
+    table,th,td{border:1px solid #000;}
+</style>
+<body >
+        <form id="myForm" method="post">
+    <div class="container">
+
+        <div id='pageTitle' class ="row " ><h1><strong>Feedback Dashboard</strong></h1></div> <br />
+        <div class="form-group" id="divddlSchema">
+            <div class="row">
+                <div class="col-md-3" style="padding-left:0px;">
+                    <select name="Schema" class="form-control" id="ddlSchema">
+                        <option value="0">Please select Schema</option>
+                        <option value="1">INTERNAL_FEEDBACK</option>
+                        <option value="2">EXTERANAL_FEEDBACK</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+        <div class="Test"></div>
+        <div class="form-group"id="ddlRefineBy" style="display:none;">
+            <div class="row">
+				<div class="col-md-2" style="padding-left:0px;">
+                    <div class="input-group date datepicker" data-date-format="yyyy-mm-dd">
+                        <span class="input-group-addon">
+                            <span class="glyphicon glyphicon-calendar"></span>
+                        </span>
+                        <input class="form-control" id="Begindate" name="Begindate" placeholder="YYYY-MM-DD" type="text" />
+                    </div>
+                </div>
+                <div class="col-md-2" style="padding-left:0px;">
+                    <div class="input-group date datepicker" data-date-format="yyyy-mm-dd">
+                        <span class="input-group-addon">
+                            <span class="glyphicon glyphicon-calendar"></span>
+                        </span>
+                        <input class="form-control" id="enddate" name="Begindate" placeholder="YYYY-MM-DD" type="text" />
+                    </div>
+                </div>
+                <div class="col-md-2" style="padding-left:0px;">
+                        <a id="btnRefresh" class="btn btn-primary btn-default">Refresh</a>
+                    </div>
+            </div>
+        </div>
+        <br />
+        <div id="divFeedback" class="row" style="display:none;" >
+                <div class="col-md-3 box">
+                    <div align="center" >
+                        <h4 align="center">POSITIVE FEEDBACK  , AMOUNT</h4>
+                        <h3 align="center" class="PositiveFeedBackValue"> </h3>
+                    </div>
+                </div>
+                <div class="col-md-3 col-md-offset-1 box">
+                    <div>
+                        <h4 align="center">NEGATIVE FEEDBACK  ,  AMOUNT</h4>
+                        <h3 align="center" class="NegativeFeedBackValue"> </h3>
+                    </div>
+                </div>
+        </div>
+        <br />
+        <div class="row" id="divSearch" style="display:none;">
+            <div class="col-md-2  form-group" style="padding-left:0px;">
+                    <input type="text" class="form-control" name="search" id="search" placeholder="Search term...">
+            </div>
+        </div>
+        <div id="divResponse" class="row scrollit" style="display:none;">
+
+            <table class="table table-striped table-bordered table-responsive table-hover table-condensed data-resizable-columns-id">
+                <thead>
+                    <tr>
+                        <th data-resizable-column-id="intent_name">
+                            INTENT_NAME
+                        </th>
+                        <th data-resizable-column-id="question">
+                            QUESTION
+                        </th>
+                        <th data-resizable-column-id="response">
+                            RESPONSE
+                        </th>
+                        <th data-resizable-column-id="userful">
+                            USERFUL
+                        </th>
+                        <th data-resizable-column-id="confidence">
+                            CONFIDENCE
+                        </th>
+                        <th data-resizable-column-id="ask_date">
+                            ASK_DATE
+                        </th>
+                    </tr>
+                </thead>
+                <tbody id="tblBodyResponse">
+
+                </tbody>
+            </table>
+        </div>
+    </div>
+</form>
+</body>
+</html>
